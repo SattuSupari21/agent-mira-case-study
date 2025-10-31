@@ -22,6 +22,11 @@ export default function PropertiesComponent() {
         setProperties(JSON.parse(localStorage.getItem("properties")!));
     }, []);
 
+    if (properties.length === 0) {
+        return <div className="min-h-screen bg-background flex text-center items-center justify-center">
+            <h1 className="text-4xl mb-2 text-foreground">No Properties available, Try some different filters.</h1>
+        </div>
+    }
 
     return (
         <div className="min-h-screen bg-background">

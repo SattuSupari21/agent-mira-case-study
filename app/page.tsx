@@ -44,6 +44,7 @@ export default function Home() {
       localStorage.setItem("sessionId", id);
     }
     setSessionId(id);
+    localStorage.removeItem("properties")
   }, []);
 
   const router = useRouter();
@@ -84,7 +85,7 @@ export default function Home() {
 
     localStorage.setItem("properties", JSON.stringify(res));
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 2800));
 
     router.push('/properties');
   }
@@ -210,7 +211,7 @@ export default function Home() {
         };
         setMessages((prev) => [...prev, summaryMessage]);
       }
-    }, 200);
+    }, 500);
   };
 
   // enables user to send message by pressing enter on keyboard
