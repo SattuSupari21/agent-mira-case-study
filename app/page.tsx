@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ChatMessage from "@/components/ChatMessage";
 import { useRouter } from "next/navigation";
+import { v4 } from "uuid";
+import { QUESTIONS } from "@/lib/chatbot_questions";
 
 type PropertyBasics = {
   id: number,
@@ -23,70 +25,6 @@ type Message = {
   isUser: boolean;
 }
 
-type Question = {
-  text: string;
-  type: "input" | "select";
-  options?: string[];
-}
-
-let QUESTIONS: Question[] = [
-  {
-    text: "Great! Let’s start with your budget. What price range are you looking for?",
-    type: "input"
-  },
-  {
-    text: "Got it. Which location or area would you like the property to be in?",
-    type: "select",
-    options: []
-  },
-  {
-    text: "How many bedrooms do you need?",
-    type: "input"
-  },
-  {
-    text: "And how many bathrooms would you prefer?",
-    type: "input"
-  },
-  {
-    text: "What minimum or approximate size (in square feet) are you looking for?",
-    type: "input"
-  },
-  {
-    text: "Lastly, are there any specific amenities you'd like?",
-    type: "select",
-    options: [
-      "Gym",
-      "Swimming Pool",
-      "Parking",
-      "Beach Access",
-      "Security",
-      "Balcony",
-      "Private Garden",
-      "Smart Home",
-      "Garage",
-      "Laundry",
-      "Rooftop Terrace",
-      "Smart Security",
-      "Private Elevator",
-      "Park View",
-      "24/7 Concierge",
-      "Fitness Center",
-      "Private Dock",
-      "Boat Parking",
-      "BBQ Area",
-      "Backyard",
-      "Community Pool",
-      "Pet Friendly",
-      "Home Office",
-      "Solar Panels",
-      "Two-Car Garage",
-      "Minimalist Design",
-      "Smart Appliances",
-      "Energy Efficient"
-    ]
-  }
-];
-
 export default function Home() {
   const [properties, setProperties] = useState<string[]>([]);
   const [fetchedData, setFetchedData] = useState<PropertyBasicsType>([]);
@@ -96,6 +34,17 @@ export default function Home() {
   const [responses, setResponses] = useState<string[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const [sessionId, setSessionId] = useState<string>("");
+
+  useEffect(() => {
+    let id = localStorage.getItem("sessionId");
+    if (!id) {
+      id = v4();
+      localStorage.setItem("sessionId", id);
+    }
+    setSessionId(id);
+  }, []);
 
   const router = useRouter();
 
@@ -120,13 +69,17 @@ export default function Home() {
     locations = responses[1].split("|");
     amenities = responses[5].split("|");
 
+    const budget = parseInt(responses[0])
+
     const res = await getPropertyData({
       ids,
+      budget,
       locations,
       numberOfBedrooms: parseInt(responses[2]),
       numberOfBathrooms: parseInt(responses[3]),
       size_sqft: parseInt(responses[4]),
-      amenities
+      amenities,
+      sessionId
     });
 
     localStorage.setItem("properties", JSON.stringify(res));

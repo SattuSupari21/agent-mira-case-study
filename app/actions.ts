@@ -4,6 +4,9 @@ import property_basics from "@/lib/property_basics.json";
 import property_characteristics from "@/lib/property_characteristics.json";
 import properyImages from "@/lib/property_images.json";
 
+import { connectDB } from "@/lib/mongodb";
+import UserProperties from "@/models/UserProperties";
+
 type PropertyBasics = {
     id: number,
     title: string,
@@ -43,19 +46,24 @@ const propertyImages: PropertyImagesType = properyImages;
 
 export async function getPropertyData({
     ids,
+    budget,
     locations,
     numberOfBedrooms,
     numberOfBathrooms,
     size_sqft,
-    amenities
+    amenities,
+    sessionId
 }: {
     ids: number[],
+    budget: number,
     locations: string[],
     numberOfBedrooms: number,
     numberOfBathrooms: number,
     size_sqft: number,
-    amenities: string[]
+    amenities: string[],
+    sessionId: string
 }) {
+    await connectDB();
 
     const result = ids.map((id) => {
         const base = properties.find((b) => b.id === id);
@@ -82,6 +90,15 @@ export async function getPropertyData({
             locations.includes(res!.location!) &&
             res!.amenities?.some((a: string) => amenities.includes(a))
     );
+
+    if (filteredRes.length > 0) {
+        await UserProperties.insertMany(
+            filteredRes.map((r) => ({
+                ...r,
+                sessionId,
+            }))
+        );
+    }
 
     return filteredRes;
 }
